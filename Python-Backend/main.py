@@ -54,9 +54,8 @@ async def image_classify(
     decoded_body = raw_body.decode("utf-8", errors="replace")
     image_base64 = json.loads(decoded_body).get("image")
     prediction = predict_base64_image(image_base64)
-    print(f"Predicted class: {prediction}")
-
-    return prediction
+    output = {"Predicted-class": prediction}
+    return output
 
 @app.post("/disease-detect/")
 async def disease_detect(
