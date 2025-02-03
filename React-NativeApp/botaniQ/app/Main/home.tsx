@@ -230,10 +230,15 @@ export default function Page() {
                   <MoistureGraph data={selectedPlant.moistureData} />
                 </View>
 
-                <View style={styles.plantInfoContainer}>
-                  <Text style={styles.infoTitle}>About this Plant</Text>
-                  <Text style={styles.infoText}>{selectedPlant.info}</Text>
-                </View>
+                <ScrollView>
+                  <Text style={styles.infoTitle}>
+                    Current Moisture Status: {selectedPlant.currentStatus}
+                  </Text>
+                  <View style={styles.plantInfoContainer}>
+                    <Text style={styles.infoTitle}>About this Plant</Text>
+                    <Text style={styles.infoText}>{selectedPlant.info}</Text>
+                  </View>
+                </ScrollView>
               </>
             )}
           </View>
@@ -307,7 +312,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
-    marginVertical: 20,
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
