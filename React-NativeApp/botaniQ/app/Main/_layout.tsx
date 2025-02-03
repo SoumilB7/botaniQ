@@ -8,14 +8,14 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#6e9277',
         tabBarInactiveTintColor: '#8E8E93',
         tabBarStyle: {
-          backgroundColor: '#e0e6e9',
+          backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
-          borderTopColor: '#D1D1D6',
+          borderTopColor: '#FFFFFF',
           paddingBottom: 50,
           paddingTop: 5,
         },
         headerStyle: {
-          backgroundColor: '#e0e6e9',
+          backgroundColor: '#FFFFFF',
         },
         headerTitleStyle: {
           color: "#374f59",
