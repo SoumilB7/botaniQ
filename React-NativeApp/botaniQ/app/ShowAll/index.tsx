@@ -1,6 +1,8 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import PlantModal from "../../components/PlantModal";
+import { useEffect } from "react";
+import Svg, { Circle } from "react-native-svg";
 
 import {
   StyleSheet,
@@ -35,7 +37,7 @@ export default function ShowAllPlants() {
       image:
         "https://plus.unsplash.com/premium_photo-1672998159540-0a3f849fe3c6?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z3JlZW4lMjBwbGFudHxlbnwwfHwwfHx8MA%3D%3D",
       info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [62, 60, 55, 70, 68, 62, 58], // Monday to Sunday
+      moistureData: [62, 60, 55, 70, 68, 62, 45], // Monday to Sunday
       currentStatus: "low",
     },
     {
@@ -44,7 +46,7 @@ export default function ShowAllPlants() {
       image:
         "https://plus.unsplash.com/premium_photo-1668096747185-624626b732f4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGdyZWVuJTIwcGxhbnQlMjBwb3R0ZWR8ZW58MHx8MHx8fDA%3D",
       info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [35, 60, 55, 10, 68, 62, 58], // Monday to Sunday
+      moistureData: [35, 60, 55, 10, 68, 62, 29], // Monday to Sunday
       currentStatus: "ok",
     },
     {
@@ -53,7 +55,7 @@ export default function ShowAllPlants() {
       image:
         "https://images.unsplash.com/photo-1515542647469-5f9a6b25ef5b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [15, 20, 55, 70, 48, 62, 58], // Monday to Sunday
+      moistureData: [15, 20, 55, 70, 48, 62, 31], // Monday to Sunday
       currentStatus: "medium",
     },
     {
@@ -66,51 +68,86 @@ export default function ShowAllPlants() {
     },
   ]);
 
-  // Reuse status color function from home page
-  const getStatusColor = (status: "low" | "medium" | "ok") => {
-    switch (status) {
-      case "ok":
-        return "#4CAF50";
-      case "medium":
-        return "#FFC107";
-      case "low":
-        return "#FF5252";
-      default:
-        return "#4CAF50";
-    }
+  const ProgressCircle = ({ percentage }: { percentage: number }) => {
+    const radius = 20; // Increase the radius for a larger circle
+    const circleCircumference = 2 * Math.PI * radius;
+    const strokeColor =
+      percentage < 30 ? "#FF5252" : percentage < 50 ? "#FFC107" : "#4CAF50";
+
+    return (
+      <View
+        style={{
+          width: 50, // Adjust width to match the new size
+          height: 50, // Adjust height to match the new size
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Svg height="50" width="50">
+          {" "}
+          {/* Match SVG size to container */}
+          <Circle
+            cx="25" // Center of the circle (half of width/height)
+            cy="25" // Center of the circle (half of width/height)
+            r={radius}
+            stroke="#e0e0e0"
+            strokeWidth="4" // Adjust stroke width for better visibility
+            fill="transparent"
+          />
+          <Circle
+            cx="25"
+            cy="25"
+            r={radius}
+            stroke={strokeColor}
+            strokeWidth="4"
+            fill="transparent"
+            strokeDasharray={`${circleCircumference} ${circleCircumference}`}
+            strokeDashoffset={
+              circleCircumference - (percentage / 100) * circleCircumference
+            }
+            rotation="-90" // Start from top
+            origin="25, 25"
+            strokeLinecap="round"
+          />
+        </Svg>
+        <Text style={{ position: "absolute", fontSize: 14, color: "#333" }}>
+          {percentage}%
+        </Text>
+      </View>
+    );
   };
 
   const filteredPlants = plants.filter((plant) =>
     plant.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const PlantCard = ({ plant }: { plant: Plant }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => {
-        setSelectedPlant(plant);
-        setModalVisible(true);
-      }}
-    >
-      <ExpoImage
-        style={styles.cardImage}
-        source={{ uri: plant.image }}
-        placeholder={blurhash}
-        contentFit="cover"
-        transition={1000}
-      />
-      <View style={styles.cardTextContainer}>
-        <Text style={styles.plantName}>{plant.name}</Text>
-        <Text style={styles.moistureText}>Moisture Level</Text>
-      </View>
-      <View
-        style={[
-          styles.statusCircle,
-          { borderColor: getStatusColor(plant.currentStatus) },
-        ]}
-      />
-    </TouchableOpacity>
-  );
+  const PlantCard = ({ plant }: { plant: Plant }) => {
+    const today = new Date().getDay();
+    const dayIndex = today === 0 ? 6 : today - 1;
+    const currentPercentage = plant.moistureData[dayIndex];
+
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => {
+          setSelectedPlant(plant);
+          setModalVisible(true);
+        }}
+      >
+        <ExpoImage
+          style={styles.cardImage}
+          source={{ uri: plant.image }}
+          placeholder={blurhash}
+          contentFit="cover"
+          transition={1000}
+        />
+        <View style={styles.cardTextContainer}>
+          <Text style={styles.plantName}>{plant.name}</Text>
+        </View>
+        <ProgressCircle percentage={currentPercentage} />
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -209,15 +246,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#333",
   },
-  moistureText: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-  },
   statusCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 24,
     borderWidth: 3,
     marginLeft: 8,
   },

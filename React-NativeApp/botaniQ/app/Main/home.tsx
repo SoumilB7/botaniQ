@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import React from "react";
+import PlantModal from "@/components/PlantModal";
 
 import {
   StyleSheet,
@@ -100,43 +101,6 @@ export default function Page() {
       getStatusPriority(b.currentStatus as "low" | "medium" | "ok")
   );
 
-  const MoistureGraph = ({ data }: { data: number[] }) => {
-    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-    const barData = data.map((value, index) => ({
-      value,
-      label: days[index],
-      frontColor: "#9db3c1",
-      topLabelComponent: () => (
-        <Text style={{ color: "#666", fontSize: 12, marginBottom: 4 }}>
-          {value}%
-        </Text>
-      ),
-    }));
-
-    return (
-      <View style={{ paddingBottom: 20, overflow: "hidden" }}>
-        <BarChart
-          data={barData}
-          width={Dimensions.get("window").width - 64}
-          height={200}
-          barWidth={30}
-          spacing={20}
-          hideRules
-          xAxisThickness={1}
-          yAxisThickness={1}
-          xAxisColor="#666"
-          yAxisColor="#666"
-          yAxisTextStyle={{ color: "#666", fontSize: 12 }}
-          noOfSections={4}
-          maxValue={100}
-          yAxisLabelTexts={["0%", "25%", "50%", "75%", "100%"]}
-          labelWidth={30}
-        />
-      </View>
-    );
-  };
-
   return (
     <View style={styles.pageContainer}>
       {/* Weather Stats Container */}
@@ -206,44 +170,11 @@ export default function Page() {
         <Text style={styles.buttonText}>Show all plants</Text>
       </TouchableOpacity>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
+      <PlantModal
+        plant={selectedPlant}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>✕</Text>
-            </TouchableOpacity>
-
-            {selectedPlant && (
-              <>
-                <Text style={styles.modalTitle}>{selectedPlant.name}</Text>
-
-                <View style={styles.graphContainer}>
-                  <Text style={styles.graphTitle}>Weekly Moisture Levels</Text>
-                  <MoistureGraph data={selectedPlant.moistureData} />
-                </View>
-
-                <ScrollView>
-                  <Text style={styles.infoTitle}>
-                    Current Moisture Status: {selectedPlant.currentStatus}
-                  </Text>
-                  <View style={styles.plantInfoContainer}>
-                    <Text style={styles.infoTitle}>About this Plant</Text>
-                    <Text style={styles.infoText}>{selectedPlant.info}</Text>
-                  </View>
-                </ScrollView>
-              </>
-            )}
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setModalVisible(false)}
+      />
     </View>
   );
 }

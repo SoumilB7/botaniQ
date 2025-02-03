@@ -6,6 +6,7 @@ import {
   Modal,
   StyleSheet,
   Dimensions,
+  ScrollView,
 } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
@@ -78,16 +79,20 @@ const PlantModal: React.FC<PlantModalProps> = ({ plant, visible, onClose }) => {
           {plant && (
             <>
               <Text style={styles.modalTitle}>{plant.name}</Text>
+              <ScrollView>
+                <View style={styles.graphContainer}>
+                  <Text style={styles.graphTitle}>Weekly Moisture Levels</Text>
+                  <MoistureGraph data={plant.moistureData} />
+                </View>
 
-              <View style={styles.graphContainer}>
-                <Text style={styles.graphTitle}>Weekly Moisture Levels</Text>
-                <MoistureGraph data={plant.moistureData} />
-              </View>
-
-              <View style={styles.plantInfoContainer}>
-                <Text style={styles.infoTitle}>About this Plant</Text>
-                <Text style={styles.infoText}>{plant.info}</Text>
-              </View>
+                <Text style={styles.infoTitle}>
+                  Current Moisture Status: {plant.currentStatus}
+                </Text>
+                <View style={styles.plantInfoContainer}>
+                  <Text style={styles.infoTitle}>About this Plant</Text>
+                  <Text style={styles.infoText}>{plant.info}</Text>
+                </View>
+              </ScrollView>
             </>
           )}
         </View>
