@@ -2,6 +2,8 @@ import { router } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
 import { useState } from 'react';
 import { backend } from '../constants';
+import { useAuth } from '@/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface SignUp {
   username: string;
@@ -10,8 +12,7 @@ interface SignUp {
   enabled: string;
   authtoken: string;
 }
-
-const createUser = async (user: SignUp) => {
+const createUser = async (user: SignUp, setIsAuthenticated: (value: boolean) => void, setUserId: (value: number) => void) => {
   try {
     const response = await fetch(`${backend}/user/signup`, {
       method: 'POST',
@@ -20,7 +21,7 @@ const createUser = async (user: SignUp) => {
       },
       body: JSON.stringify(user),
     });
-
+    
     if (response.status != 201) {
       throw new Error('Signup failed!'+response.status);
     }
@@ -34,6 +35,7 @@ const createUser = async (user: SignUp) => {
 };
 
 export default function Page() {
+  const { setIsAuthenticated, setUserId } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,9 +50,13 @@ export default function Page() {
 
     const newUser: SignUp = { username, email, password, enabled, authtoken: '22' };
 
-    const result = await createUser(newUser);
+    const result = await createUser(newUser, setIsAuthenticated, setUserId);
     if (result) {
-      router.push('/Main');
+      setIsAuthenticated(true);
+      setUserId(result.userId);
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.setItem('userId', result.userId.toString());
+      router.push('/Main/home');
     }
   };
 

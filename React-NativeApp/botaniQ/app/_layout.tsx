@@ -9,8 +9,10 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
+import { Slot } from "expo-router";
 
 import { useColorScheme } from "@/components/useColorScheme";
+import { AuthProvider } from "@/AuthContext";
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -50,31 +52,31 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
-  const colorScheme = useColorScheme();
-
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <AuthProvider>
       <Stack
-        screenOptions={{
-          headerShown: false,
-        }}
+      screenOptions={{
+        headerShown: false,
+      }}
       >
-        <Stack.Screen
+        <Slot />
+        {/* <Stack.Screen
           name="index"
           options={
             {
               // Add any specific options for index screen
             }
           }
-        />
+          />
         <Stack.Screen
           name="Login"
           options={
+            
             {
               // Add any specific options for Logout screen
             }
           }
-        />
+          />
         <Stack.Screen
           name="Main"
           options={
@@ -82,7 +84,7 @@ function RootLayoutNav() {
               // Add any specific options for Logout screen
             }
           }
-        />
+          />
         <Stack.Screen
           name="ShowAll"
           options={
@@ -90,7 +92,7 @@ function RootLayoutNav() {
               // Add any specific options for Logout screen
             }
           }
-        />
+          />
         <Stack.Screen
           name="Signup"
           options={
@@ -98,8 +100,8 @@ function RootLayoutNav() {
               // Add any specific options for Logout screen
             }
           }
-        />
+          /> */}
       </Stack>
-    </ThemeProvider>
+          </AuthProvider>
   );
 }

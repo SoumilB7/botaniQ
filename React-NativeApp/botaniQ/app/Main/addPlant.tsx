@@ -13,6 +13,8 @@ import {
 import * as FileSystem from "expo-file-system";
 import axios from "axios";
 import { Ionicons } from "@expo/vector-icons";
+import { backend } from "../constants";
+import { useAuth } from "@/AuthContext";
 
 export default function App() {
   const [facing, setFacing] = useState<CameraType>("back");
@@ -21,6 +23,7 @@ export default function App() {
   const [cameraRef, setCameraRef] = useState<CameraView | null>(null);
   const [classification, setClassification] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { userId } = useAuth();
 
   if (!permission) {
     // Camera permissions are still loading
@@ -60,6 +63,32 @@ export default function App() {
     }
   };
 
+  // const uploadImage = async (imageUri: string) => {
+  //   try {
+  //     const base64Image = await FileSystem.readAsStringAsync(imageUri, {
+  //       encoding: FileSystem.EncodingType.Base64,
+  //     });
+
+  //     const payload = JSON.stringify({
+  //       image: base64Image,
+  //     });
+
+  //     setLoading(true);
+  //     const response = await axios.post(
+  //       `${backend}/app/${userId}/save`,
+  //       payload,
+  //       { headers: { "Content-Type": "application/json" } }
+  //     );
+  //     setLoading(false);
+  //     console.log(response.data);
+  //     Alert.alert(`Plant ID: ${response.data["plantid"]}`);
+  //     setClassification(response.data["Predictedid"]);
+  //   } catch (error) {
+  //     console.error("Upload error:", error);
+  //     setLoading(false);
+  //   }
+  // };
+
   const uploadImage = async (imageUri: string) => {
     try {
       const base64Image = await FileSystem.readAsStringAsync(imageUri, {
@@ -72,20 +101,31 @@ export default function App() {
 
       setLoading(true);
       const response = await axios.post(
-        "https://6011-2409-40f4-a8-8015-4dca-3a07-def9-4571.ngrok-free.app/image-classify/",
+        "https://3f46-136-233-9-106.ngrok-free.app/image-classify/",
         payload,
         { headers: { "Content-Type": "application/json" } }
       );
+      
       setLoading(false);
-      Alert.alert(`Prediction: ${response.data["Predicted-class"]}`);
-      setClassification(response.data["Predicted-class"]);
+      console.log(response.data);
+      Alert.alert(`Prediction: ${response.data.name}`, response.data.description);
+
+      // setClassification(String(response.data["name"]));
     } catch (error) {
       console.error("Upload error:", error);
+      Alert.alert("Error", "Failed to upload image. Please try again.");
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
+      {loading ? (
+        <View style={[styles.container2, styles.centerContent]}>
+          <ActivityIndicator size="large" color="#6e9277" />
+          <Text style={styles.message}>This may take a few seconds</Text>
+        </View>
+      ) : null}
       {capturedImage ? (
         <View style={styles.previewContainer}>
           <Image source={{ uri: capturedImage }} style={styles.previewImage} />
@@ -102,11 +142,6 @@ export default function App() {
             >
               <Text style={styles.text2}>Upload</Text>
             </TouchableOpacity>
-            {loading ? (
-              <View style={[styles.container, styles.centerContent]}>
-                <ActivityIndicator size="large" color="#6e9277" />
-              </View>
-            ) : null}
           </View>
         </View>
       ) : (
@@ -140,10 +175,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
   },
+  container2: {
+    height: 250,
+    justifyContent: "center",
+  },
   centerContent: {
     alignItems: "center",
     justifyContent: "center",
-    flex: 1,
+
   },
   message: {
     textAlign: "center",
@@ -156,6 +195,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#e0e6e9",
   },
   previewImage: {
     width: "100%",
@@ -176,11 +216,14 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
   },
   button: {
+    marginHorizontal: 20,
+
     padding: 20,
     backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 10,
   },
   button2: {
+    marginHorizontal: 20,
     padding: 20,
     backgroundColor: "rgba(255, 255, 255, 0.5)",
     borderRadius: 10,

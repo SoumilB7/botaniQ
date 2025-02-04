@@ -1,6 +1,10 @@
 import { router } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import PlantModal from "@/components/PlantModal";
+import { useAuth } from "@/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { backend } from "@/app/constants";
 
 import {
   StyleSheet,
@@ -22,10 +26,39 @@ interface Plant {
   currentStatus: "low" | "medium" | "ok";
 }
 
+const getAll = async (userId: number) => {
+  const response = await axios.get(`${backend}/app/${userId}/all`);
+  return response.data;
+};
+
 export default function Page() {
+  const { userId } = useAuth();
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  console.log("userId: ", userId);
+  const [userId2, setUserId2] = useState('');
+  useEffect(() => {
+    console.log("userId2: ", userId2);
+  }, [userId2]);
 
+  useEffect(() => {
+    getAll(userId).then((data) => {
+      console.log(data);
+    })
+  })
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('userId');
+      if (value !== null) {
+        // value previously stored
+        setUserId2(value);
+      }
+    } catch (e) {
+      // error reading value
+      console.log("Error Reading async storage userId");
+    }
+  };
+  getData();
   // Sample data - replace with actual data
   const unsortedPlants = [
     {

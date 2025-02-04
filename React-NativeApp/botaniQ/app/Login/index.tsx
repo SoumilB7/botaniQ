@@ -2,14 +2,16 @@ import { router } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { backend } from '../constants'; // Ensure this contains your API URL
-
+import { useAuth } from '@/AuthContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 interface Login {
   email: string;
   password: string;
 }
 
-
-const handleLogin = async (user: Login) => {
+const handleLogin = async (user: Login, setIsAuthenticated: (value: boolean) => void, setUserId: (value: number) => void) => {
+  // router.push("/Main/home");
+  
   try {
     const response = await fetch(`${backend}/user/login`, {
       method: 'POST',
@@ -22,17 +24,22 @@ const handleLogin = async (user: Login) => {
     const data = await response.json();
     console.log(data);
     if (response.ok) {
-      router.push('/Main'); // Redirect on success
+      setIsAuthenticated(true);
+      setUserId(data.userId);
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.setItem('userId', data.userId.toString());
+      router.push('/Main/home'); // Redirect on success
     } else {
       alert(data.message || 'Login failed');
     }
-  } catch (error) {
+  } catch (error) { 
     console.error(error);
     alert('An error occurred');
   }
 };
 
-export default function Page() {
+export default function Login() {
+  const { setIsAuthenticated, setUserId } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -59,7 +66,7 @@ export default function Page() {
       
       <TouchableOpacity 
         style={styles.button}
-        onPress={() => handleLogin({ email, password })}
+        onPress={() => handleLogin({ email, password}, setIsAuthenticated, setUserId )}
       >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
