@@ -7,10 +7,47 @@ import pickle
 import requests
 import json
 import base64
+import os
 import math
+import google.generativeai as gemini
+from dotenv import load_dotenv
+load_dotenv()
+api_key = os.getenv("GEMINI_API_KEY")
+
+gemini.configure(api_key=api_key)
+def get_plant_info(plant_species):
+    prompt = f"Provide the habitat conditions and a brief description of the plant species: {plant_species}."
+    response = gemini.generate_text(prompt=prompt)
+    plant_info = response.result
+    return plant_info
+
 
 def euclidean_distance(vec1, vec2):
     return math.sqrt(sum((a - b) ** 2 for a, b in zip(vec1, vec2)))
+
+species_list = [
+        "African Violet (Saintpaulia ionantha)", "Aloe Vera", "Anthurium (Anthurium andraeanum)",
+        "Areca Palm (Dypsis lutescens)", "Asparagus Fern (Asparagus setaceus)", "Begonia (Begonia spp.)",
+        "Bird of Paradise (Strelitzia reginae)", "Birds Nest Fern (Asplenium nidus)",
+        "Boston Fern (Nephrolepis exaltata)", "Calathea", "Cast Iron Plant (Aspidistra elatior)",
+        "Chinese Money Plant (Pilea peperomioides)", "Chinese Evergreen (Aglaonema)",
+        "Christmas Cactus (Schlumbergera bridgesii)", "Chrysanthemum", "Ctenanthe",
+        "Daffodils (Narcissus spp.)", "Dracaena", "Dumb Cane (Dieffenbachia spp.)",
+        "Elephant Ear (Alocasia spp.)", "English Ivy (Hedera helix)", "Hyacinth (Hyacinthus orientalis)",
+        "Iron Cross Begonia (Begonia masoniana)", "Jade Plant (Crassula ovata)", "Kalanchoe",
+        "Lilium (Hemerocallis)", "Lily of the Valley (Convallaria majalis)", "Money Tree (Pachira aquatica)",
+        "Monstera Deliciosa (Monstera deliciosa)", "Orchid", "Parlor Palm (Chamaedorea elegans)",
+        "Peace Lily", "Poinsettia (Euphorbia pulcherrima)", "Polka Dot Plant (Hypoestes phyllostachya)",
+        "Ponytail Palm (Beaucarnea recurvata)", "Pothos (Ivy Arum)", "Prayer Plant (Maranta leuconeura)",
+        "Rattlesnake Plant (Calathea lancifolia)", "Rubber Plant (Ficus elastica)",
+        "Sago Palm (Cycas revoluta)", "Schefflera", "Snake Plant (Sansevieria)", "Tradescantia",
+        "Tulip", "Venus Flytrap", "Yucca", "ZZ Plant (Zamioculcas zamiifolia)"
+    ]
+
+ferns = ["Asparagus Fern (Asparagus setaceus)", "Birds Nest Fern (Asplenium nidus)", "Boston Fern (Nephrolepis exaltata)"]
+succulents = ["Aloe Vera", "Christmas Cactus (Schlumbergera bridgesii)", "Jade Plant (Crassula ovata)", "Kalanchoe", "Snake Plant (Sansevieria)", "ZZ Plant (Zamioculcas zamiifolia)"]
+palms = ["Areca Palm (Dypsis lutescens)", "Parlor Palm (Chamaedorea elegans)", "Ponytail Palm (Beaucarnea recurvata)", "Sago Palm (Cycas revoluta)"]
+ornamental = [sp for sp in species_list if sp not in ferns + succulents + palms]
 
 def get_plant_stress_condition(species: str, features: list, species_vectors: dict) -> str:
     if species not in species_vectors:
@@ -28,105 +65,34 @@ def get_plant_stress_condition(species: str, features: list, species_vectors: di
             best_condition = condition
     return best_condition
 
-def plant_status(species_input,features):
-    species_list = [
-        "African Violet (Saintpaulia ionantha)",
-        "Aloe Vera",
-        "Anthurium (Anthurium andraeanum)",
-        "Areca Palm (Dypsis lutescens)",
-        "Asparagus Fern (Asparagus setaceus)",
-        "Begonia (Begonia spp.)",
-        "Bird of Paradise (Strelitzia reginae)",
-        "Birds Nest Fern (Asplenium nidus)",
-        "Boston Fern (Nephrolepis exaltata)",
-        "Calathea",
-        "Cast Iron Plant (Aspidistra elatior)",
-        "Chinese Money Plant (Pilea peperomioides)",
-        "Chinese Evergreen (Aglaonema)",
-        "Christmas Cactus (Schlumbergera bridgesii)",
-        "Chrysanthemum",
-        "Ctenanthe",
-        "Daffodils (Narcissus spp.)",
-        "Dracaena",
-        "Dumb Cane (Dieffenbachia spp.)",
-        "Elephant Ear (Alocasia spp.)",
-        "English Ivy (Hedera helix)",
-        "Hyacinth (Hyacinthus orientalis)",
-        "Iron Cross Begonia (Begonia masoniana)",
-        "Jade Plant (Crassula ovata)",
-        "Kalanchoe",
-        "Lilium (Hemerocallis)",
-        "Lily of the Valley (Convallaria majalis)",
-        "Money Tree (Pachira aquatica)",
-        "Monstera Deliciosa (Monstera deliciosa)",
-        "Orchid",
-        "Parlor Palm (Chamaedorea elegans)",
-        "Peace Lily",
-        "Poinsettia (Euphorbia pulcherrima)",
-        "Polka Dot Plant (Hypoestes phyllostachya)",
-        "Ponytail Palm (Beaucarnea recurvata)",
-        "Pothos (Ivy Arum)",
-        "Prayer Plant (Maranta leuconeura)",
-        "Rattlesnake Plant (Calathea lancifolia)",
-        "Rubber Plant (Ficus elastica)",
-        "Sago Palm (Cycas revoluta)",
-        "Schefflera",
-        "Snake Plant (Sansevieria)",
-        "Tradescantia",
-        "Tulip",
-        "Venus Flytrap",
-        "Yucca",
-        "ZZ Plant (Zamioculcas zamiifolia)"
-    ]
-    
+def plant_status(species_input,features):  
     # ------------------------------------------------------------------
     # Group species based on their characteristics.
     # (Adjust these lists as needed for your particular classification.)
-    ferns = [
-        "Asparagus Fern (Asparagus setaceus)",
-        "Birds Nest Fern (Asplenium nidus)",
-        "Boston Fern (Nephrolepis exaltata)"
-    ]
-    
-    succulents = [
-        "Aloe Vera",
-        "Christmas Cactus (Schlumbergera bridgesii)",
-        "Jade Plant (Crassula ovata)",
-        "Kalanchoe",
-        "Snake Plant (Sansevieria)",
-        "ZZ Plant (Zamioculcas zamiifolia)"
-    ]
-    
-    palms = [
-        "Areca Palm (Dypsis lutescens)",
-        "Parlor Palm (Chamaedorea elegans)",
-        "Ponytail Palm (Beaucarnea recurvata)",
-        "Sago Palm (Cycas revoluta)"
-    ]
     
     # All species not in the above groups will be assigned to "ornamental" or general houseplants.
     ornamental = [sp for sp in species_list if sp not in ferns + succulents + palms]
     
     # ------------------------------------------------------------------
     # Ornamental (general houseplants)
-    ornamental_healthy   = [36.66, 22.80, 20.15, 42.96, 872.32]
-    ornamental_high      = [19.16, 22.81, 20.03, 61.28, 268.73]
-    ornamental_moderate  = [24.68, 19.16, 17.51, 63.83, 760.43]
+    ornamental_healthy   = [36.66, 22.80, 42.96, 872.32]
+    ornamental_high      = [19.16, 22.81, 61.28, 268.73]
+    ornamental_moderate  = [24.68, 19.16, 63.83, 760.43]
     
     # Ferns – typically more delicate, so you might have slightly lower values, etc.
-    ferns_healthy   = [35.00, 23.00, 19.50, 45.00, 800.00]
-    ferns_high      = [18.00, 22.00, 18.00, 60.00, 250.00]
-    ferns_moderate  = [25.00, 20.00, 17.00, 65.00, 700.00]
+    ferns_healthy   = [35.00, 23.00, 45.00, 800.00]
+    ferns_high      = [18.00, 22.00, 60.00, 250.00]
+    ferns_moderate  = [25.00, 20.00, 65.00, 700.00]
     
     # Succulents/Cacti – they often have higher Feature1 (e.g., water retention) and other differences.
-    succulents_healthy   = [40.00, 25.00, 21.00, 40.00, 900.00]
-    succulents_high      = [22.00, 21.00, 19.00, 55.00, 300.00]
-    succulents_moderate  = [28.00, 20.00, 18.00, 60.00, 800.00]
+    succulents_healthy   = [40.00, 25.00, 40.00, 900.00]
+    succulents_high      = [22.00, 21.00, 55.00, 300.00]
+    succulents_moderate  = [28.00, 20.00, 60.00, 800.00]
     
     # Palms – may have their own distinctive values.
-    palms_healthy   = [38.00, 24.00, 20.00, 43.00, 850.00]
-    palms_high      = [20.00, 23.00, 19.00, 62.00, 280.00]
-    palms_moderate  = [26.00, 21.00, 18.00, 64.00, 780.00]  
+    palms_healthy   = [38.00, 24.00, 43.00, 850.00]
+    palms_high      = [20.00, 23.00, 62.00, 280.00]
+    palms_moderate  = [26.00, 21.00, 64.00, 780.00]  
     # ------------------------------------------------------------------
     species_vectors = {}
     
@@ -167,6 +133,38 @@ def plant_status(species_input,features):
     condition = get_plant_stress_condition(species_input, features, species_vectors)
     return condition
 
+def find_suitable_species(feature_values):
+    
+    ornamental = [sp for sp in species_list if sp not in ferns + succulents + palms]
+
+    category_vectors = {
+        "Ferns": [[35.00, 23.00, 45.00, 800.00], [18.00, 22.00, 60.00, 250.00], [25.00, 20.00, 65.00, 700.00]],
+        "Succulents": [[40.00, 25.00, 40.00, 900.00], [22.00, 21.00, 55.00, 300.00], [28.00, 20.00, 60.00, 800.00]],
+        "Palms": [[38.00, 24.00, 43.00, 850.00], [20.00, 23.00, 62.00, 280.00], [26.00, 21.00, 64.00, 780.00]],
+        "Ornamental": [[36.66, 22.80, 42.96, 872.32], [19.16, 22.81, 61.28, 268.73], [24.68, 19.16, 63.83, 760.43]]
+    }
+
+    from scipy.spatial.distance import euclidean
+
+    best_match = None
+    min_distance = float('inf')
+
+    for category, vectors in category_vectors.items():
+        for vector in vectors:
+            distance = euclidean(feature_values, vector)
+            if distance < min_distance:
+                min_distance = distance
+                best_match = category
+
+    if best_match == "Ferns":
+        return ferns
+    elif best_match == "Succulents":
+        return succulents
+    elif best_match == "Palms":
+        return palms
+    else:
+        return ornamental
+
 
 
 
@@ -189,15 +187,15 @@ with open("scaler.pkl", "rb") as f:
 
 
 
-def preprocess_base64_image(base64_str):
-    image_bytes = base64.b64decode(base64_str)
+def preprocess_base64_image(image_bytes):
+    # image_bytes = base64.b64decode(base64_str)
     image_array = np.frombuffer(image_bytes, dtype=np.uint8)
     img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     img = img / 255.0  
     return img
-def predict_base64_image(base64_str):
-    img = preprocess_base64_image(base64_str)
+def predict_base64_image(img):
+    # img = preprocess_base64_image(base64_str)
     img = np.expand_dims(img, axis=0)  
     pred = model_img.predict(img)
     pred_label = np.argmax(pred, axis=1)[0]
@@ -228,7 +226,8 @@ async def image_classify(
     decoded_body = raw_body.decode("utf-8", errors="replace")
     image_base64 = json.loads(decoded_body).get("image")
     prediction = predict_base64_image(image_base64)
-    output = {"name": prediction}
+    description = get_plant_info(prediction)
+    output = {"name": prediction,"description" : description}
     print(output)
     return output
 
@@ -247,3 +246,19 @@ async def health_detect(
 
     predicted_status = plant_status(species,[soil_moisture, ambient_temp, humidity, light_intensity])
     return {"Predicted_Health_Status": predicted_status}
+
+
+@app.post("/suitable-species/")
+async def health_detect(
+        request: Request
+    ):
+    raw_body = await request.body()
+    decoded_body = raw_body.decode("utf-8", errors="replace")
+    data = json.loads(decoded_body)
+    soil_moisture = int(data.get("Soil_Moisture"))
+    ambient_temp = int(data.get("Ambient_Temperature"))
+    humidity = int(data.get("Humidity"))
+    light_intensity = int(data.get("Light_Intensity"))
+
+    predicted_status = find_suitable_species([soil_moisture, ambient_temp, humidity, light_intensity])
+    return {"Habitual-species": str(predicted_status)}
