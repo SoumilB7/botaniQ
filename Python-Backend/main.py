@@ -238,7 +238,7 @@ async def health_detect(
     raw_body = await request.body()
     decoded_body = raw_body.decode("utf-8", errors="replace")
     data = json.loads(decoded_body)
-    species = int(data.get("species"))
+    species = (data.get("species"))
     soil_moisture = int(data.get("soilMoisture"))
     ambient_temp = int(data.get("ambientTemperature"))
     humidity = int(data.get("humidity"))
