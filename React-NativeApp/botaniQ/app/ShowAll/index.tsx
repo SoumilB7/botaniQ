@@ -1,7 +1,9 @@
+//
+
 import { router } from "expo-router";
 import React, { useState } from "react";
 import PlantModal from "../../components/PlantModal";
-import Svg, { Circle } from "react-native-svg";
+import { LinearGradient } from "expo-linear-gradient";
 
 import {
   StyleSheet,
@@ -10,7 +12,6 @@ import {
   TouchableOpacity,
   FlatList,
   TextInput,
-  Image,
 } from "react-native";
 
 import { blurhash } from "@/app/constants";
@@ -54,7 +55,7 @@ export default function ShowAllPlants() {
       image:
         "https://images.unsplash.com/photo-1515542647469-5f9a6b25ef5b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
       info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [15, 20, 55, 70, 48, 62, 31], // Monday to Sunday
+      moistureData: [15, 20, 20, 70, 48, 62, 31], // Monday to Sunday
       currentStatus: "medium",
     },
     {
@@ -62,58 +63,42 @@ export default function ShowAllPlants() {
       name: "Raphis",
       image: "placeholder-url-1",
       info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [25, 60, 55, 70, 68, 62, 58], // Monday to Sunday
+      moistureData: [25, 60, 33, 70, 68, 62, 58], // Monday to Sunday
       currentStatus: "low",
     },
   ]);
 
-  const ProgressCircle = ({ percentage }: { percentage: number }) => {
-    const radius = 20; // Increase the radius for a larger circle
-    const circleCircumference = 2 * Math.PI * radius;
-    const strokeColor =
-      percentage < 30 ? "#FF5252" : percentage < 50 ? "#FFC107" : "#4CAF50";
+  const getGradientColors = (percentage: number): readonly [string, string] => {
+    if (percentage < 30) {
+      // Subtle rose/red gradient
+      return ["#FEF2F2", "#FEE2E2"] as const;
+    } else if (percentage < 50) {
+      // Subtle amber gradient
+      return ["#FFFBEB", "#FEF3C7"] as const;
+    } else {
+      // Subtle emerald gradient
+      return ["#F0FDF4", "#DCFCE7"] as const;
+    }
+  };
 
-    return (
-      <View
-        style={{
-          width: 50, // Adjust width to match the new size
-          height: 50, // Adjust height to match the new size
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Svg height="50" width="50">
-          {" "}
-          {/* Match SVG size to container */}
-          <Circle
-            cx="25" // Center of the circle (half of width/height)
-            cy="25" // Center of the circle (half of width/height)
-            r={radius}
-            stroke="#e0e0e0"
-            strokeWidth="4" // Adjust stroke width for better visibility
-            fill="transparent"
-          />
-          <Circle
-            cx="25"
-            cy="25"
-            r={radius}
-            stroke={strokeColor}
-            strokeWidth="4"
-            fill="transparent"
-            strokeDasharray={`${circleCircumference} ${circleCircumference}`}
-            strokeDashoffset={
-              circleCircumference - (percentage / 100) * circleCircumference
-            }
-            rotation="-90" // Start from top
-            origin="25, 25"
-            strokeLinecap="round"
-          />
-        </Svg>
-        <Text style={{ position: "absolute", fontSize: 14, color: "#333" }}>
-          {percentage}%
-        </Text>
-      </View>
-    );
+  const getTextColor = (percentage: number): string => {
+    if (percentage < 30) {
+      return "#991B1B"; // Dark red
+    } else if (percentage < 50) {
+      return "#92400E"; // Dark amber
+    } else {
+      return "#166534"; // Dark emerald
+    }
+  };
+
+  const getPercentageColor = (percentage: number): string => {
+    if (percentage < 30) {
+      return "#DC2626"; // Bright red
+    } else if (percentage < 50) {
+      return "#D97706"; // Bright amber
+    } else {
+      return "#059669"; // Bright emerald
+    }
   };
 
   const filteredPlants = plants.filter((plant) =>
@@ -124,26 +109,45 @@ export default function ShowAllPlants() {
     const today = new Date().getDay();
     const dayIndex = today === 0 ? 6 : today - 1;
     const currentPercentage = plant.moistureData[dayIndex];
+    const gradientColors = getGradientColors(currentPercentage);
+    const textColor = getTextColor(currentPercentage);
+    const percentageColor = getPercentageColor(currentPercentage);
 
     return (
       <TouchableOpacity
-        style={styles.card}
         onPress={() => {
           setSelectedPlant(plant);
           setModalVisible(true);
         }}
       >
-        <ExpoImage
-          style={styles.cardImage}
-          source={{ uri: plant.image }}
-          placeholder={blurhash}
-          contentFit="cover"
-          transition={1000}
-        />
-        <View style={styles.cardTextContainer}>
-          <Text style={styles.plantName}>{plant.name}</Text>
-        </View>
-        <ProgressCircle percentage={currentPercentage} />
+        <LinearGradient
+          colors={gradientColors}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.card}
+        >
+          <ExpoImage
+            style={styles.cardImage}
+            source={{ uri: plant.image }}
+            placeholder={blurhash}
+            contentFit="cover"
+            transition={1000}
+          />
+          <View style={styles.cardTextContainer}>
+            <View style={styles.plantTextContainer}>
+              <Text style={[styles.plantName, { color: textColor }]}>
+                {plant.name}
+              </Text>
+              <Text style={styles.scientificName}>
+                Scientific Name
+                {/* {plant.scientificName || "Scientific name not available"} */}
+              </Text>
+            </View>
+          </View>
+          <Text
+            style={[styles.percentageText, { color: percentageColor }]}
+          >{`${currentPercentage}`}</Text>
+        </LinearGradient>
       </TouchableOpacity>
     );
   };
@@ -186,7 +190,7 @@ export default function ShowAllPlants() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#e0e6e9",
+    backgroundColor: "#F9FAFB", // Lighter background
     padding: 16,
   },
   header: {
@@ -219,17 +223,17 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   card: {
-    backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
+    paddingRight: 25,
     marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
   },
   cardImage: {
     width: 60,
@@ -239,17 +243,26 @@ const styles = StyleSheet.create({
   },
   cardTextContainer: {
     flex: 1,
+    justifyContent: "center",
+  },
+  plantTextContainer: {
+    justifyContent: "center",
+    marginVertical: -4, // Adds some negative space to tighten the text layout
   },
   plantName: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#333",
+    fontSize: 20,
+    fontWeight: "700",
+    letterSpacing: 0.5,
+    marginBottom: 2, // Space between name and scientific name
   },
-  statusCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 24,
-    borderWidth: 3,
+  scientificName: {
+    fontSize: 14,
+    color: "#6B7280", // Subtle grey color
+    fontStyle: "italic",
+  },
+  percentageText: {
+    fontSize: 24,
+    fontWeight: "700",
     marginLeft: 8,
   },
 });
