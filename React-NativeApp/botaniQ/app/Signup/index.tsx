@@ -1,38 +1,95 @@
 import { router } from 'expo-router';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { useState } from 'react';
+import { backend } from '../constants';
+
+interface SignUp {
+  username: string;
+  email: string;
+  password: string;
+  enabled: string;
+  authtoken: string;
+}
+
+const createUser = async (user: SignUp) => {
+  try {
+    const response = await fetch(`${backend}/user/signup`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    });
+
+    if (response.status != 201) {
+      throw new Error('Signup failed!'+response.status);
+    }
+
+    const data = await response.json();
+    console.log(data);
+    return data; // Return response for further actions if needed
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 export default function Page() {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [enabled, setEnabled] = useState('false');
+
+  const handleSignUp = async () => {
+    if (password !== confirmPassword) {
+      console.error("Passwords don't match!");
+      return;
+    }
+
+    const newUser: SignUp = { username, email, password, enabled, authtoken: '22' };
+
+    const result = await createUser(newUser);
+    if (result) {
+      router.push('/Main');
+    }
+  };
+
   return (
     <View style={styles.pageContainer}>
       <Text style={styles.headerText}>Create Account</Text>
       <View style={styles.inputContainer}>
         <TextInput 
-          placeholder="Full Name"
+          placeholder="Username"
           style={styles.input}
           placeholderTextColor="#666"
+          onChangeText={setUsername}
         />
         <TextInput 
           placeholder="Email"
           style={styles.input}
           placeholderTextColor="#666"
+          keyboardType="email-address"
+          onChangeText={setEmail}
         />
         <TextInput 
           placeholder="Password"
           secureTextEntry
           style={styles.input}
           placeholderTextColor="#666"
+          onChangeText={setPassword}
         />
         <TextInput 
           placeholder="Confirm Password"
           secureTextEntry
           style={styles.input}
           placeholderTextColor="#666"
+          onChangeText={setConfirmPassword}
         />
       </View>
       
       <TouchableOpacity 
         style={styles.button}
-        onPress={() => router.push('/Main')}
+        onPress={handleSignUp}
       >
         <Text style={styles.buttonText}>Sign Up</Text>
       </TouchableOpacity>
@@ -83,10 +140,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     shadowColor: '#34D399',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,

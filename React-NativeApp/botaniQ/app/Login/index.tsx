@@ -1,7 +1,41 @@
 import { router } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
+import { useState } from 'react';
+import { backend } from '../constants'; // Ensure this contains your API URL
+
+interface Login {
+  email: string;
+  password: string;
+}
+
+
+const handleLogin = async (user: Login) => {
+  try {
+    const response = await fetch(`${backend}/user/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(user),
+    });
+
+    const data = await response.json();
+    console.log(data);
+    if (response.ok) {
+      router.push('/Main'); // Redirect on success
+    } else {
+      alert(data.message || 'Login failed');
+    }
+  } catch (error) {
+    console.error(error);
+    alert('An error occurred');
+  }
+};
 
 export default function Page() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
   return (
     <View style={styles.pageContainer}>
       <Text style={styles.headerText}>Welcome Back</Text>
@@ -10,34 +44,45 @@ export default function Page() {
           placeholder="Email"
           style={styles.input}
           placeholderTextColor="#666"
+          onChangeText={setEmail}
+          value={email}
         />
         <TextInput 
           placeholder="Password"
           secureTextEntry
           style={styles.input}
           placeholderTextColor="#666"
+          onChangeText={setPassword}
+          value={password}
         />
       </View>
       
       <TouchableOpacity 
         style={styles.button}
-        onPress={() => router.push('/Main')}
+        onPress={() => handleLogin({ email, password })}
       >
-        <Text style={styles.buttonText}>Login</Text>SignUp
+        <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-
       <TouchableOpacity 
-        style={[styles.signUp]}
+        style={styles.signUp}
         onPress={() => router.push('/Signup')}
       >
         <Text style={styles.signUpButtonText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
-
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+  },
+  centerContent: {
+    alignItems: "center",
+    justifyContent: "center",
+    flex: 1,
+  },
   pageContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -73,16 +118,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 15,
     shadowColor: '#34D399',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
-  },
-  signupButton: {
-    backgroundColor: '#10B981',
   },
   buttonText: {
     color: 'white',
@@ -95,5 +134,6 @@ const styles = StyleSheet.create({
   signUpButtonText: {
     color: '#6e9277',
     fontSize: 14,
-  }
+  },
 });
+

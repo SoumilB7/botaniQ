@@ -8,13 +8,10 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Modal,
-  Dimensions,
 } from "react-native";
 import { useState } from "react";
 import { blurhash } from "@/app/constants";
 import { Image } from "expo-image";
-import { BarChart } from "react-native-gifted-charts";
 
 interface Plant {
   id: number;
