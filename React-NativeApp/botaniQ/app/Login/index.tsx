@@ -1,22 +1,33 @@
-import { router } from 'expo-router';
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
-import { useState } from 'react';
-import { backend } from '../constants'; // Ensure this contains your API URL
-import { useAuth } from '@/AuthContext';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from "expo-router";
+import {
+  StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
+import { useState } from "react";
+import { backend } from "../constants"; // Ensure this contains your API URL
+import { useAuth } from "@/AuthContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 interface Login {
   email: string;
   password: string;
 }
 
-const handleLogin = async (user: Login, setIsAuthenticated: (value: boolean) => void, setUserId: (value: number) => void) => {
+const handleLogin = async (
+  user: Login,
+  setIsAuthenticated: (value: boolean) => void,
+  setUserId: (value: number) => void
+) => {
   // router.push("/Main/home");
-  
+
   try {
     const response = await fetch(`${backend}/user/login`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(user),
     });
@@ -26,35 +37,35 @@ const handleLogin = async (user: Login, setIsAuthenticated: (value: boolean) => 
     if (response.ok) {
       setIsAuthenticated(true);
       setUserId(data.userId);
-      await AsyncStorage.removeItem('userId');
-      await AsyncStorage.setItem('userId', data.userId.toString());
-      router.push('/Main/home'); // Redirect on success
+      await AsyncStorage.removeItem("userId");
+      await AsyncStorage.setItem("userId", data.userId.toString());
+      router.push("/Main/home"); // Redirect on success
     } else {
-      alert(data.message || 'Login failed');
+      alert(data.message || "Login failed");
     }
-  } catch (error) { 
+  } catch (error) {
     console.error(error);
-    alert('An error occurred');
+    alert("An error occurred");
   }
 };
 
 export default function Login() {
   const { setIsAuthenticated, setUserId } = useAuth();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   return (
     <View style={styles.pageContainer}>
       <Text style={styles.headerText}>Welcome Back</Text>
       <View style={styles.inputContainer}>
-        <TextInput 
+        <TextInput
           placeholder="Email"
           style={styles.input}
           placeholderTextColor="#666"
           onChangeText={setEmail}
           value={email}
         />
-        <TextInput 
+        <TextInput
           placeholder="Password"
           secureTextEntry
           style={styles.input}
@@ -63,18 +74,22 @@ export default function Login() {
           value={password}
         />
       </View>
-      
-      <TouchableOpacity 
+
+      <TouchableOpacity
         style={styles.button}
-        onPress={() => handleLogin({ email, password}, setIsAuthenticated, setUserId )}
+        onPress={() =>
+          handleLogin({ email, password }, setIsAuthenticated, setUserId)
+        }
       >
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.signUp}
-        onPress={() => router.push('/Signup')}
+        onPress={() => router.push("/Signup")}
       >
-        <Text style={styles.signUpButtonText}>Don't have an account? Sign Up</Text>
+        <Text style={styles.signUpButtonText}>
+          Don't have an account? Sign Up
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -92,55 +107,54 @@ const styles = StyleSheet.create({
   },
   pageContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#e0e6e9',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#e0e6e9",
     padding: 20,
   },
   headerText: {
-    color: '#2C3E50',
+    color: "#2C3E50",
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 40,
   },
   inputContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 20,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    backgroundColor: '#F5F6F8',
+    backgroundColor: "#F5F6F8",
     borderRadius: 10,
     marginBottom: 15,
     paddingHorizontal: 15,
     fontSize: 16,
   },
   button: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    backgroundColor: '#6e9277',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#6e9277",
+    justifyContent: "center",
+    alignItems: "center",
     borderRadius: 10,
     marginBottom: 15,
-    shadowColor: '#34D399',
+    shadowColor: "#34D399",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   signUp: {
     marginTop: 15,
   },
   signUpButtonText: {
-    color: '#6e9277',
+    color: "#6e9277",
     fontSize: 14,
   },
 });
-
