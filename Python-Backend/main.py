@@ -255,10 +255,10 @@ async def health_detect(
     raw_body = await request.body()
     decoded_body = raw_body.decode("utf-8", errors="replace")
     data = json.loads(decoded_body)
-    soil_moisture = int(data.get("Soil_Moisture"))
-    ambient_temp = int(data.get("Ambient_Temperature"))
-    humidity = int(data.get("Humidity"))
-    light_intensity = int(data.get("Light_Intensity"))
+    soil_moisture = int(data.get("soilMoisture"))
+    ambient_temp = int(data.get("ambientTemperature"))
+    humidity = int(data.get("humidity"))
+    light_intensity = int(data.get("lightIntensity"))
 
     predicted_status = find_suitable_species([soil_moisture, ambient_temp, humidity, light_intensity])
     return {"species": str(predicted_status)}
