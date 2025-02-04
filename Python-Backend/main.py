@@ -9,17 +9,17 @@ import json
 import base64
 import os
 import math
-import google.generativeai as gemini
+import google.generativeai as genai
 from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv("GEMINI_API_KEY")
-
-gemini.configure(api_key=api_key)
+genai.configure(api_key=api_key)
+model = genai.GenerativeModel("gemini-1.5-flash")
 def get_plant_info(plant_species):
-    prompt = f"Provide the habitat conditions and a brief description of the plant species: {plant_species}."
-    response = gemini.generate_text(prompt=prompt)
-    plant_info = response.result
-    return plant_info
+    """Fetches habitat conditions and a brief description for a plant species."""
+    prompt = f"Provide the habitat conditions and a brief description of the plant species in a simple paragraph no fancy text formats: {plant_species}."
+    response = model.generate_content(prompt)
+    return response.text
 
 
 def euclidean_distance(vec1, vec2):
@@ -187,15 +187,15 @@ with open("scaler.pkl", "rb") as f:
 
 
 
-def preprocess_base64_image(image_bytes):
-    # image_bytes = base64.b64decode(base64_str)
+def preprocess_base64_image(base64_str):
+    image_bytes = base64.b64decode(base64_str)
     image_array = np.frombuffer(image_bytes, dtype=np.uint8)
     img = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
     img = cv2.resize(img, (IMG_SIZE, IMG_SIZE))
     img = img / 255.0  
     return img
-def predict_base64_image(img):
-    # img = preprocess_base64_image(base64_str)
+def predict_base64_image(base64_str):
+    img = preprocess_base64_image(base64_str)
     img = np.expand_dims(img, axis=0)  
     pred = model_img.predict(img)
     pred_label = np.argmax(pred, axis=1)[0]
@@ -227,9 +227,9 @@ async def image_classify(
     image_base64 = json.loads(decoded_body).get("image")
     prediction = predict_base64_image(image_base64)
     description = get_plant_info(prediction)
-    output = {"name": prediction,"description" : description}
+    output = {"name": prediction,"description":description}
     print(output)
-    return output
+    return (output)
 
 @app.post("/health-detect/")
 async def health_detect(
