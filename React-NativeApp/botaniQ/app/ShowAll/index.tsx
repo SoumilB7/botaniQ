@@ -1,7 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
 import PlantModal from "../../components/PlantModal";
-import { useEffect } from "react";
 import Svg, { Circle } from "react-native-svg";
 
 import {
