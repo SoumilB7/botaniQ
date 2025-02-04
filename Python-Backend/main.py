@@ -245,7 +245,7 @@ async def health_detect(
     light_intensity = int(data.get("lightIntensity"))
 
     predicted_status = plant_status(species,[soil_moisture, ambient_temp, humidity, light_intensity])
-    return {"Predicted_Health_Status": predicted_status}
+    return {"status": predicted_status}
 
 
 @app.post("/suitable-species/")
@@ -261,4 +261,4 @@ async def health_detect(
     light_intensity = int(data.get("Light_Intensity"))
 
     predicted_status = find_suitable_species([soil_moisture, ambient_temp, humidity, light_intensity])
-    return {"Habitual-species": str(predicted_status)}
+    return {"species": str(predicted_status)}
