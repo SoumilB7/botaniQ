@@ -116,16 +116,27 @@ export default function App() {
       console.log("Upload response:", response.data);
       setUploading(false);
 
-      const payload = JSON.stringify({
-        userId: userId,
-        recordId: response.data.rescordId,
-        fileName: response.data.filename,
-        image: base64Image,
-      });
-
-      setUploading(false);
-
+ 
       setAnalysing(true);
+
+      const payload2 = JSON.stringify({
+              image: base64Image,
+            });
+
+      const response3 = await axios.post(
+        "https://667f-152-58-225-239.ngrok-free.app/image-classify/",
+        payload2,
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("Analysis response:", response.data);
+
+      const payload = JSON.stringify({
+        name: response3.data.name,
+        recordId: response.data.id,
+        fileName: response.data.field,
+        description: response3.data.description,
+      });
 
       const response2 = await axios.post(
         `${backend}/app/${userId}/save`,
@@ -134,10 +145,9 @@ export default function App() {
       );
       setAnalysing(false);
       setLoading(false);
-      console.log(response2.data);
       Alert.alert(
-        `Prediction: ${response2.data.name}`,
-        response2.data.description
+        `Prediction: ${response3.data.name}`,
+        response3.data.description
       );
       return response.data;
     } catch (error) {
@@ -167,7 +177,7 @@ export default function App() {
 
   //     setLoading(true);
   //     const response = await axios.post(
-  //       "https://3f46-136-233-9-106.ngrok-free.app/image-classify/",
+  //       "https://667f-152-58-225-239.ngrok-free.app/image-classify/",
   //       payload,
   //       { headers: { "Content-Type": "application/json" } }
   //     );

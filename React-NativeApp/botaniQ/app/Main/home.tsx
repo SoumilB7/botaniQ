@@ -189,7 +189,7 @@ export default function Page() {
       </ScrollView>
 
       {/* Plant Recommendations Section */}
-      <TouchableOpacity>
+      <TouchableOpacity onPress={() => router.push("/Recommendations")}>
         <View style={styles.recommendationsContainer}>
           <Text style={styles.sectionTitle}>Plant Recommendations</Text>
           <Text style={styles.recommendationText}>

@@ -18,12 +18,17 @@ import { blurhash } from "@/app/constants";
 import { Image as ExpoImage } from "expo-image";
 
 interface Plant {
-  id: number;
+  plantId: number;
   name: string;
-  image: string;
-  info: string;
+  description: string;
+  recordId: string;
+  fileName: string;
+  temperature: number;
+  humidity: number;
+  status: "HIGH" | "MID" | "OK";
+  soil_moisture: number;
   moistureData: number[];
-  currentStatus: "low" | "medium" | "ok";
+  image: string;
 }
 
 export default function ShowAllPlants() {
@@ -32,39 +37,59 @@ export default function ShowAllPlants() {
   const [searchQuery, setSearchQuery] = useState("");
   const [plants, setPlants] = useState<Plant[]>([
     {
-      id: 1,
+      recordId: "asda",
+      fileName: "asad",
+      temperature: 234,
+      humidity: 324,
+      plantId: 1,
+      soil_moisture: 23432,
       name: "Monstera",
       image:
         "https://plus.unsplash.com/premium_photo-1672998159540-0a3f849fe3c6?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z3JlZW4lMjBwbGFudHxlbnwwfHwwfHx8MA%3D%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
+      description: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
       moistureData: [62, 60, 55, 70, 68, 62, 45], // Monday to Sunday
-      currentStatus: "low",
+      status: "HIGH",
     },
     {
-      id: 2,
+      recordId: "asda",
+      fileName: "asad",
+      temperature: 234,
+      humidity: 324,
+      plantId: 2,
+      soil_moisture: 23432,
       name: "Mycilea",
       image:
         "https://plus.unsplash.com/premium_photo-1668096747185-624626b732f4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGdyZWVuJTIwcGxhbnQlMjBwb3R0ZWR8ZW58MHx8MHx8fDA%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
+      description: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
       moistureData: [35, 60, 55, 10, 68, 62, 29], // Monday to Sunday
-      currentStatus: "ok",
+      status: "OK",
     },
     {
-      id: 3,
+      recordId: "asda",
+      fileName: "asad",
+      temperature: 234,
+      humidity: 324,
+      plantId: 3,
+      soil_moisture: 23432,
       name: "Paraphelia",
       image:
         "https://images.unsplash.com/photo-1515542647469-5f9a6b25ef5b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
+      description: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
       moistureData: [15, 20, 20, 70, 48, 62, 31], // Monday to Sunday
-      currentStatus: "medium",
+      status: "MID",
     },
     {
-      id: 4,
+      recordId: "asda",
+      fileName: "asad",
+      temperature: 234,
+      humidity: 324,
+      plantId: 4,
+      soil_moisture: 23432,
       name: "Raphis",
       image: "placeholder-url-1",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
+      description: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
       moistureData: [25, 60, 33, 70, 68, 62, 58], // Monday to Sunday
-      currentStatus: "low",
+      status: "HIGH",
     },
   ]);
 
@@ -138,10 +163,6 @@ export default function ShowAllPlants() {
               <Text style={[styles.plantName, { color: textColor }]}>
                 {plant.name}
               </Text>
-              <Text style={styles.scientificName}>
-                Scientific Name
-                {/* {plant.scientificName || "Scientific name not available"} */}
-              </Text>
             </View>
           </View>
           <Text
@@ -173,7 +194,7 @@ export default function ShowAllPlants() {
       <FlatList
         data={filteredPlants}
         renderItem={({ item }) => <PlantCard plant={item} />}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.plantId.toString()}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
       />
@@ -190,7 +211,7 @@ export default function ShowAllPlants() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F9FAFB", // Lighter background
+    backgroundColor: "#e0e6e9", // Lighter background
     padding: 16,
   },
   header: {
