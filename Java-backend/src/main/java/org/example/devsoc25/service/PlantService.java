@@ -19,6 +19,7 @@ import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -36,13 +37,13 @@ public class PlantService {
     }
 
 
-    public Plant savePlant(Plant plant,long userId) throws URISyntaxException, IOException, InterruptedException {
+    public Plant savePlant(Plant plant, long userId, String image) throws URISyntaxException, IOException, InterruptedException {
         Optional<User> user = userRepository.findById(userId);
         plant.setUser(user.get());
 
         String response="";
         Gson gson = new Gson();
-        String jsonRequest = "{\"image\":\""+plant.getImage()+"\"}";
+        String jsonRequest = "{\"image\":\""+image+"\"}";
 
         URL url = new URL("https://7cda-2409-40f4-40c2-871-65c2-e767-b012-a0fe.ngrok-free.app/image-classify");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
@@ -58,28 +59,27 @@ public class PlantService {
         try (BufferedReader bf = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
             String line;
             while ((line = bf.readLine()) != null) {
-                response=line;
+                response+=line;
                 System.out.println(line);
             }
         }
 
 
-        log.info(response);
-        String plantName = this.getVal(response) ;
-        log.info(response);
-        log.info(plantName);
-        plant.setName("Dracaena");
+        HashMap<String,String> map = gson.fromJson(response,HashMap.class);
+        //log.info(map.get("name")+"   "+map.get("description"));
+        plant.setName(map.get("name"));
+        plant.setDescription(map.get("description"));
 
         return plantRepository.save(plant);
     }
 
     public List<Plant> getAll(long userid) {
-        Optional<List<Plant>> plants =plantRepository.findAllByUserUserid(userid);
+        Optional<List<Plant>> plants = plantRepository.findAllByUserUserid(userid);
         //log.info(plants.get().toString());
         return plants.get();
     }
 
-    String getVal(String json){
+    String getVal(String json) {
 // Find the index of the key "status" followed by the value's opening quote
         int keyIndex = json.indexOf("\"name\":\"");
         // Calculate the start index of the value (after the opening quote)
@@ -92,4 +92,5 @@ public class PlantService {
         return value;
 
     }
+
 }

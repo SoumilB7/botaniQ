@@ -18,7 +18,9 @@ public class Plant {
     private long plantid;
 
     private String name;
-    private String image;
+    private String recordId;
+    private String fileName;
+    @Column(length = 1000)
     private String description;
     private String status;
     private float soil_moisture;
@@ -36,14 +38,15 @@ public class Plant {
         return "Plant{" +
                 "plantid=" + plantid +
                 ", name='" + name + '\'' +
-                ", image='" + image + '\'' +
+                ", recordId='" + recordId + '\'' +
+                ", fileName='" + fileName + '\'' +
                 ", description='" + description + '\'' +
                 ", status='" + status + '\'' +
                 ", soil_moisture=" + soil_moisture +
                 ", temperature=" + temperature +
                 ", humidity=" + humidity +
                 ", light=" + light +
-                ", user=" + user.getUsername() +
+                ", user=" + user +
                 '}';
     }
 
@@ -57,9 +60,10 @@ public class Plant {
     public Plant() {
     }
 
-    public Plant(String name, String image, String description, String status, float soil_moisture, float temperature, float humidity, float light, User user) {
+    public Plant(String name, String recordId, String fileName, String description, String status, float soil_moisture, float temperature, float humidity, float light, User user) {
         this.name = name;
-        this.image = image;
+        this.recordId = recordId;
+        this.fileName = fileName;
         this.description = description;
         this.status = status;
         this.soil_moisture = soil_moisture;
@@ -68,5 +72,6 @@ public class Plant {
         this.light = light;
         this.user = user;
     }
+
 
 }
