@@ -75,24 +75,24 @@ def plant_status(species_input,features):
     
     # ------------------------------------------------------------------
     # Ornamental (general houseplants)
-    ornamental_healthy   = [36.66, 22.80, 42.96, 872.32]
-    ornamental_high      = [19.16, 22.81, 61.28, 268.73]
-    ornamental_moderate  = [24.68, 19.16, 63.83, 760.43]
+    ornamental_healthy   = [36.66, 26.80, 47.96, 78.32]
+    ornamental_high      = [19.16, 22.81, 51.28, 26.73]
+    ornamental_moderate  = [24.68, 19.16, 53.83, 72.43]
     
     # Ferns – typically more delicate, so you might have slightly lower values, etc.
-    ferns_healthy   = [35.00, 23.00, 45.00, 800.00]
-    ferns_high      = [18.00, 22.00, 60.00, 250.00]
-    ferns_moderate  = [25.00, 20.00, 65.00, 700.00]
+    ferns_healthy   = [35.00, 23.00, 45.00, 80.00]
+    ferns_high      = [18.00, 22.00, 60.00, 25.00]
+    ferns_moderate  = [25.00, 20.00, 65.00, 70.00]
     
     # Succulents/Cacti – they often have higher Feature1 (e.g., water retention) and other differences.
-    succulents_healthy   = [40.00, 25.00, 40.00, 900.00]
-    succulents_high      = [22.00, 21.00, 55.00, 300.00]
-    succulents_moderate  = [28.00, 20.00, 60.00, 800.00]
+    succulents_healthy   = [40.00, 25.00, 40.00, 90.00]
+    succulents_high      = [22.00, 21.00, 55.00, 30.00]
+    succulents_moderate  = [28.00, 20.00, 60.00, 80.00]
     
     # Palms – may have their own distinctive values.
-    palms_healthy   = [38.00, 24.00, 43.00, 850.00]
-    palms_high      = [20.00, 23.00, 62.00, 280.00]
-    palms_moderate  = [26.00, 21.00, 64.00, 780.00]  
+    palms_healthy   = [38.00, 24.00, 43.00, 85.00]
+    palms_high      = [20.00, 23.00, 62.00, 28.00]
+    palms_moderate  = [26.00, 21.00, 64.00, 78.00]  
     # ------------------------------------------------------------------
     species_vectors = {}
     
@@ -242,9 +242,10 @@ async def health_detect(
     soil_moisture = int(data.get("soilMoisture"))
     ambient_temp = int(data.get("ambientTemperature"))
     humidity = int(data.get("humidity"))
-    light_intensity = int(data.get("lightIntensity"))
+    light_intensity = int(data.get("lightIntensity"))/10
 
     predicted_status = plant_status(species,[soil_moisture, ambient_temp, humidity, light_intensity])
+    print(data,predicted_status)
     return {"status": predicted_status}
 
 
@@ -258,7 +259,7 @@ async def health_detect(
     soil_moisture = int(data.get("soilMoisture"))
     ambient_temp = int(data.get("ambientTemperature"))
     humidity = int(data.get("humidity"))
-    light_intensity = int(data.get("lightIntensity"))
+    light_intensity = int(data.get("lightIntensity"))/10
 
     predicted_status = find_suitable_species([soil_moisture, ambient_temp, humidity, light_intensity])
     return {"species": str(predicted_status)}
