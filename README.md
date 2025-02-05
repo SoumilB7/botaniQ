@@ -2,8 +2,6 @@
 
 **Bringing intelligence to plant care with IoT & AI**  
 
-![botaniQ Banner](https://drive.google.com/file/d/1yxzKrccEef0l6ssEw0PhIJGk6zYQ_E3_/view?usp=sharing)  
-
 ---
 
 ## 🚀 Overview  
