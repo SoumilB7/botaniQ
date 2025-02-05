@@ -1,11 +1,10 @@
 import { router } from "expo-router";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import PlantModal from "@/components/PlantModal";
 import { useAuth } from "@/AuthContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { backend } from "@/app/constants";
-
 import {
   StyleSheet,
   View,
@@ -13,122 +12,128 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import { useState } from "react";
 import { blurhash } from "@/app/constants";
 import { Image } from "expo-image";
 
 interface Plant {
-  id: number;
+  plantId: number;
   name: string;
-  image: string;
-  info: string;
+  description: string;
+  recordId: string;
+  fileName: string;
+  temperature: number;
+  humidity: number;
+  status: "HIGH" | "MID" | "OK";
+  soil_moisture: number;
   moistureData: number[];
-  currentStatus: "low" | "medium" | "ok";
+  image: string;
 }
 
 const getAll = async (userId: number) => {
-  const response = await axios.get(`${backend}/app/${userId}/all`);
+  const response = await axios.get(`${backend}/app/${userId}/allplants`);
   return response.data;
+};
+
+const getCurrentDayIndex = () => {
+  return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
+};
+
+const initializeMoistureData = async (plant: Plant) => {
+  try {
+    const existingData = await AsyncStorage.getItem(plant.plantId.toString());
+    if (existingData === null) {
+      // Initialize new array with 7 null values
+      const newData = new Array(7).fill(null);
+      // Set current day's moisture value
+      const currentDay = getCurrentDayIndex();
+      newData[currentDay] = plant.soil_moisture;
+      await AsyncStorage.setItem(plant.plantId.toString(), JSON.stringify(newData));
+      return newData;
+    } else {
+      // Update existing data for current day
+      const moistureData = JSON.parse(existingData);
+      const currentDay = getCurrentDayIndex();
+      moistureData[currentDay] = plant.soil_moisture;
+      await AsyncStorage.setItem(plant.plantId.toString(), JSON.stringify(moistureData));
+      return moistureData;
+    }
+  } catch (error) {
+    console.error("Error handling moisture data:", error);
+    return new Array(7).fill(null);
+  }
 };
 
 export default function Page() {
   const { userId } = useAuth();
   const [selectedPlant, setSelectedPlant] = useState<Plant | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  console.log("userId: ", userId);
-  const [userId2, setUserId2] = useState('');
-  useEffect(() => {
-    console.log("userId2: ", userId2);
-  }, [userId2]);
+  const [plants, setPlants] = useState<Plant[]>([]);
+  const [temperature, setTemperature] = useState<number>(0);
+  const [humidity, setHumidity] = useState<number>(0);
+  const [noPlants, setNoPlants] = useState(false);
+
 
   useEffect(() => {
-    getAll(userId).then((data) => {
-      console.log(data);
-    })
-  })
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem('userId');
-      if (value !== null) {
-        // value previously stored
-        setUserId2(value);
+    const fetchPlants = async () => {
+      try {
+        if (userId) {
+          const data = await getAll(userId);
+          const plantsWithMoistureData = await Promise.all(
+            data.map(async (plant: Plant) => {
+              const moistureData = await initializeMoistureData(plant);
+              return {
+                ...plant,
+                moistureData,
+                image: `https://botaniq.pockethost.io/api/files/image/${plant.recordId}/${plant.fileName}`
+              };
+            })
+          );
+          
+          setPlants(plantsWithMoistureData);
+          
+          // Set temperature and humidity from the first plant
+          if (plantsWithMoistureData.length > 0) {
+            setTemperature(plantsWithMoistureData[0].temperature);
+            setHumidity(plantsWithMoistureData[0].humidity);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching plants:", error);
       }
-    } catch (e) {
-      // error reading value
-      console.log("Error Reading async storage userId");
-    }
-  };
-  getData();
-  // Sample data - replace with actual data
-  const unsortedPlants = [
-    {
-      id: 1,
-      name: "Monstera",
-      image:
-        "https://plus.unsplash.com/premium_photo-1672998159540-0a3f849fe3c6?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8Z3JlZW4lMjBwbGFudHxlbnwwfHwwfHx8MA%3D%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [62, 60, 55, 70, 68, 62, 58], // Monday to Sunday
-      currentStatus: "low",
-    },
-    {
-      id: 2,
-      name: "Mycilea",
-      image:
-        "https://plus.unsplash.com/premium_photo-1668096747185-624626b732f4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjF8fGdyZWVuJTIwcGxhbnQlMjBwb3R0ZWR8ZW58MHx8MHx8fDA%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [35, 60, 55, 10, 68, 62, 58], // Monday to Sunday
-      currentStatus: "ok",
-    },
-    {
-      id: 3,
-      name: "Paraphelia",
-      image:
-        "https://images.unsplash.com/photo-1515542647469-5f9a6b25ef5b?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [15, 20, 55, 70, 48, 62, 58], // Monday to Sunday
-      currentStatus: "medium",
-    },
-    {
-      id: 4,
-      name: "Raphis",
-      image: "placeholder-url-1",
-      info: "Monstera deliciosa, commonly known as the Swiss cheese plant, is famous for its natural leaf holes. It prefers bright, indirect sunlight and moderate watering.",
-      moistureData: [25, 60, 55, 70, 68, 62, 58], // Monday to Sunday
-      currentStatus: "low",
-    },
-  ];
+    };
+
+    fetchPlants();
+  }, [userId]);
 
   // Helper function to get border color based on status
-  const getStatusColor = (status: "low" | "medium" | "ok") => {
+  const getStatusColor = (status: "HIGH" | "MID" | "OK") => {
     switch (status) {
-      case "ok":
-        return "#4CAF50"; // Green
-      case "medium":
-        return "#FFC107"; // Yellow
-      case "low":
-        return "#FF5252"; // Red
+      case "OK":
+        return "#4CAF50";
+      case "MID":
+        return "#FFC107";
+      case "HIGH":
+        return "#FF5252";
       default:
         return "#4CAF50";
     }
   };
 
-  const getStatusPriority = (status: "low" | "medium" | "ok") => {
+  const getStatusPriority = (status: "HIGH" | "MID" | "OK") => {
     switch (status) {
-      case "low":
+      case "OK":
         return 1;
-      case "medium":
+      case "MID":
         return 2;
-      case "ok":
+      case "HIGH":
         return 3;
       default:
         return 3;
     }
   };
 
-  const plants = [...unsortedPlants].sort(
-    (a, b) =>
-      getStatusPriority(a.currentStatus as "low" | "medium" | "ok") -
-      getStatusPriority(b.currentStatus as "low" | "medium" | "ok")
+  const sortedPlants = [...plants].sort(
+    (a, b) => getStatusPriority(a.status) - getStatusPriority(b.status)
   );
 
   return (
@@ -137,11 +142,11 @@ export default function Page() {
       <View style={styles.statsContainer}>
         <View style={styles.statBox}>
           <Text style={styles.statTitle}>Temperature</Text>
-          <Text style={styles.statValue}>24°C</Text>
+          <Text style={styles.statValue}>{temperature}°C</Text>
         </View>
         <View style={styles.statBox}>
           <Text style={styles.statTitle}>Humidity</Text>
-          <Text style={styles.statValue}>65%</Text>
+          <Text style={styles.statValue}>{humidity}%</Text>
         </View>
       </View>
 
@@ -151,23 +156,24 @@ export default function Page() {
         showsHorizontalScrollIndicator={false}
         style={styles.scrollView}
       >
-        {plants.map((plant) => (
+        {sortedPlants.length === 0 && (
+          <View style={styles.noPlantsContainer}>
+            <Text style={styles.noPlantsText}>No plants found. click camera icon to add plants.</Text>
+          </View>
+        )}
+        {sortedPlants.map((plant) => (
           <TouchableOpacity
-            key={plant.id}
+            key={plant.plantId}
             style={styles.plantCircle}
             onPress={() => {
-              setSelectedPlant(plant as Plant);
+              setSelectedPlant(plant);
               setModalVisible(true);
             }}
           >
             <View
               style={[
                 styles.circlePlaceholder,
-                {
-                  borderColor: getStatusColor(
-                    plant.currentStatus as "medium" | "low" | "ok"
-                  ),
-                },
+                { borderColor: getStatusColor(plant.status) },
               ]}
             >
               <Image
@@ -183,15 +189,16 @@ export default function Page() {
       </ScrollView>
 
       {/* Plant Recommendations Section */}
-      <View style={styles.recommendationsContainer}>
-        <Text style={styles.sectionTitle}>Plant Recommendations</Text>
-        <Text style={styles.recommendationText}>
-          Based on your local climate and care preferences, here are some plants
-          that would thrive in your space. These plants are known for their
-          air-purifying qualities and easy maintenance requirements.
-        </Text>
-      </View>
-
+      <TouchableOpacity>
+        <View style={styles.recommendationsContainer}>
+          <Text style={styles.sectionTitle}>Plant Recommendations</Text>
+          <Text style={styles.recommendationText}>
+            Based on your local climate and care preferences, here are some plants
+            that would thrive in your space. These plants are known for their
+            air-purifying qualities and easy maintenance requirements.
+          </Text>
+        </View>
+      </TouchableOpacity>
       {/* Show All Plants Button */}
       <TouchableOpacity
         style={styles.button}
@@ -210,6 +217,15 @@ export default function Page() {
 }
 
 const styles = StyleSheet.create({
+  noPlantsContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 15
+  },
+  noPlantsText: {
+    textAlign: "center",
+    color: "#666",
+  },
   pageContainer: {
     flex: 1,
     backgroundColor: "#e0e6e9",
@@ -265,10 +281,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
     overflow: "hidden",
   },
-  circleText: {
-    fontSize: 12,
-    color: "#333",
-  },
   recommendationsContainer: {
     backgroundColor: "white",
     borderRadius: 12,
@@ -303,60 +315,5 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
-  },
-  modalContainer: {
-    flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modalContent: {
-    backgroundColor: "white",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 20,
-    height: "80%",
-  },
-  closeButton: {
-    position: "absolute",
-    right: 20,
-    top: 20,
-    zIndex: 1,
-  },
-  closeButtonText: {
-    fontSize: 24,
-    color: "#666",
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 20,
-    color: "#333",
-  },
-  graphContainer: {
-    marginVertical: 20,
-    backgroundColor: "#f5f5f5",
-    padding: 10,
-    borderRadius: 10,
-  },
-  graphTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#333",
-  },
-  plantInfoContainer: {
-    marginTop: 20,
-  },
-  infoTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#333",
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: "#666",
   },
 });
