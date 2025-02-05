@@ -11,12 +11,17 @@ import {
 import { BarChart } from "react-native-gifted-charts";
 
 interface Plant {
-  id: number;
+  plantId: number;
   name: string;
-  image: string;
-  info: string;
+  description: string;
+  recordId: string;
+  fileName: string;
+  temperature: number;
+  humidity: number;
+  status: "HIGH" | "MID" | "OK";
+  soil_moisture: number;
   moistureData: number[];
-  currentStatus: "low" | "medium" | "ok";
+  image: string;
 }
 
 interface PlantModalProps {
@@ -86,11 +91,11 @@ const PlantModal: React.FC<PlantModalProps> = ({ plant, visible, onClose }) => {
                 </View>
 
                 <Text style={styles.infoTitle}>
-                  Current Moisture Status: {plant.currentStatus}
+                  Current Moisture Status: {plant.status}
                 </Text>
                 <View style={styles.plantInfoContainer}>
                   <Text style={styles.infoTitle}>About this Plant</Text>
-                  <Text style={styles.infoText}>{plant.info}</Text>
+                  <Text style={styles.infoText}>{plant.description}</Text>
                 </View>
               </ScrollView>
             </>
