@@ -14,6 +14,7 @@ import {
 } from "react-native";
 import { blurhash } from "@/app/constants";
 import { Image } from "expo-image";
+import { Float } from "react-native/Libraries/Types/CodegenTypes";
 
 interface Plant {
   plantId: number;
@@ -31,6 +32,7 @@ interface Plant {
 
 const getAll = async (userId: number) => {
   const response = await axios.get(`${backend}/app/${userId}/allplants`);
+  console.log(response.data);
   return response.data;
 };
 
@@ -38,12 +40,24 @@ const getCurrentDayIndex = () => {
   return new Date().getDay(); // 0 = Sunday, 1 = Monday, etc.
 };
 
+function convertToLux(sensorValue: Float) {
+  // Calculate LDR resistance
+  sensorValue -= 550.0;
+  const ldrResistance = 10000.0 * (1023.0 - sensorValue) / sensorValue;
+  
+  // Calculate lux using Math.pow()
+  const lux = Number((12518931 * Math.pow(ldrResistance, -1.405)).toFixed(0));
+  
+  return lux;
+}
+
+
 const initializeMoistureData = async (plant: Plant) => {
   try {
     const existingData = await AsyncStorage.getItem(plant.plantId.toString());
     if (existingData === null) {
       // Initialize new array with 7 null values
-      const newData = new Array(7).fill(null);
+      const newData = new Array(7).fill(0);
       // Set current day's moisture value
       const currentDay = getCurrentDayIndex();
       newData[currentDay] = plant.soil_moisture;
@@ -70,37 +84,48 @@ export default function Page() {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [temperature, setTemperature] = useState<number>(0);
   const [humidity, setHumidity] = useState<number>(0);
-  const [noPlants, setNoPlants] = useState(false);
+  const [light, setLight] = useState<number>(0);
 
+  const fetchPlants = async () => {
+    try {
+      if (userId) {
+        const data = await getAll(userId);
+        const plantsWithMoistureData = await Promise.all(
+          data.map(async (plant: Plant) => {
+            const moistureData = [
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100),
+              Math.floor(Math.random() * 100)
+            ];
+            return {
+              ...plant,
+              moistureData,
+              image: `https://botaniq.pockethost.io/api/files/image/${plant.recordId}/${plant.fileName}`
+            };
+          })
+        );
+    
+        
+        setPlants(plantsWithMoistureData);
+        
+        // Set temperature and humidity from the first plant
+        if (plantsWithMoistureData.length > 0) {
+          setTemperature(plantsWithMoistureData[0].temperature);
+          setHumidity(plantsWithMoistureData[0].humidity);
+          setLight(plantsWithMoistureData[0].light);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching plants:", error);
+    }
+  };
 
   useEffect(() => {
-    const fetchPlants = async () => {
-      try {
-        if (userId) {
-          const data = await getAll(userId);
-          const plantsWithMoistureData = await Promise.all(
-            data.map(async (plant: Plant) => {
-              const moistureData = await initializeMoistureData(plant);
-              return {
-                ...plant,
-                moistureData,
-                image: `https://botaniq.pockethost.io/api/files/image/${plant.recordId}/${plant.fileName}`
-              };
-            })
-          );
-          
-          setPlants(plantsWithMoistureData);
-          
-          // Set temperature and humidity from the first plant
-          if (plantsWithMoistureData.length > 0) {
-            setTemperature(plantsWithMoistureData[0].temperature);
-            setHumidity(plantsWithMoistureData[0].humidity);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching plants:", error);
-      }
-    };
+
 
     fetchPlants();
   }, [userId]);
@@ -145,9 +170,14 @@ export default function Page() {
           <Text style={styles.statValue}>{temperature}°C</Text>
         </View>
         <View style={styles.statBox}>
+          <Text style={styles.statTitle}>Light</Text>
+          <Text style={styles.statValue}>{convertToLux(light)} lx</Text>
+        </View>
+        <View style={styles.statBox}>
           <Text style={styles.statTitle}>Humidity</Text>
           <Text style={styles.statValue}>{humidity}%</Text>
         </View>
+
       </View>
 
       {/* Plant Circles ScrollView */}
@@ -188,6 +218,12 @@ export default function Page() {
         ))}
       </ScrollView>
 
+      <TouchableOpacity onPress={() => fetchPlants()}>
+        <View style={styles.refreshContainer}>
+          <Text style={styles.refresh}>Refresh</Text>
+          </View>
+      </TouchableOpacity>
+
       {/* Plant Recommendations Section */}
       <TouchableOpacity onPress={() => router.push("/Recommendations")}>
         <View style={styles.recommendationsContainer}>
@@ -217,6 +253,18 @@ export default function Page() {
 }
 
 const styles = StyleSheet.create({
+  refreshContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e0e6e9",
+  },  
+  refresh: {
+    textAlign: "center",
+    fontSize: 20,
+    color: "#666",
+    marginBottom: 20,
+  },
   noPlantsContainer: {
     justifyContent: "center",
     alignItems: "center",
@@ -247,7 +295,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderRadius: 12,
     padding: 16,
-    width: "47%",
+    width: "32%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -255,7 +303,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   statTitle: {
-    fontSize: 14,
+    fontSize: 12,
     color: "#666",
     marginBottom: 8,
   },
