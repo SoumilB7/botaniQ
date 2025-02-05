@@ -1,7 +1,7 @@
 #include <SoftwareSerial.h>
 #include <DHT.h>
 
-SoftwareSerial espSerial(10, 11);  // RX, TX
+SoftwareSerial espSerial(10, 11);  
 const int LED_PIN = LED_BUILTIN;
 
 // Sensor pins
@@ -19,7 +19,7 @@ const char* SERVER_IP = "172.22.166.125";  // Replace with your computer's local
 const int SERVER_PORT = 3001;
 
 unsigned long previousSend = 0;
-const long SEND_INTERVAL = 45000;  // 15 seconds
+const long SEND_INTERVAL = 45000;  // 45 seconds
 
 // Error codes
 #define ERR_WIFI_CONNECT 1
@@ -27,36 +27,43 @@ const long SEND_INTERVAL = 45000;  // 15 seconds
 #define ERR_HTTP_SEND 3
 #define ERR_CLOSE_CONNECTION 4
 
-void setup() {
-  //analogReadResolution(12); // ESP32: Set to 12-bit mode  pinMode(LED_PIN, OUTPUT);
+void setup() 
+{
   digitalWrite(LED_PIN, LOW);  // LED off by default
   pinMode(LIGHT_SENSOR_PIN, INPUT);
   Serial.begin(9600);
   espSerial.begin(115200);
   dht.begin();
 
-  if (!connectToWiFi()) {
+  if (!connectToWiFi()) 
+  {
     reportError(ERR_WIFI_CONNECT);
   }
 } 
 
-void loop() {
+void loop() 
+{
   unsigned long currentMillis = millis();
   
-  if (currentMillis - previousSend >= SEND_INTERVAL) {
+  if (currentMillis - previousSend >= SEND_INTERVAL) 
+  {
     previousSend = currentMillis;
     int errorCode = sendSensorData();
-    if (errorCode == 0) {
+    if (errorCode == 0) 
+    {
       blinkLED(1);  // Single blink for success
       Serial.println("Data sent successfully");
-    } else {
+    } 
+    else
+    {
       blinkLED(2);  // Double blink for failure
       reportError(errorCode);
     }
   }
 }
 
-bool connectToWiFi() {
+bool connectToWiFi() 
+{
   sendATCommand("AT+RST", 2000);
   sendATCommand("AT+CWMODE=1", 1000);
   
@@ -64,8 +71,8 @@ bool connectToWiFi() {
   return sendATCommand(connectCmd, 15000);
 }
 
-int sendSensorData() {
-  // Read sensors
+int sendSensorData() 
+{
   float soilMoisture = analogRead(R0581_ANALOG_PIN); 
   soilMoisture= -0.0304878 * soilMoisture +  46.0976;
 ;
@@ -82,7 +89,8 @@ int sendSensorData() {
 
   // Prepare AT commands for HTTP POST
   String cmd = "AT+CIPSTART=\"TCP\",\"" + String(SERVER_IP) + "\"," + String(SERVER_PORT);
-  if (!sendATCommand(cmd, 5000)) {
+  if (!sendATCommand(cmd, 5000)) 
+  {
     return ERR_TCP_CONNECT;
   }
 
@@ -93,24 +101,29 @@ int sendSensorData() {
   postRequest += payload;
 
   if (!sendATCommand("AT+CIPSEND=" + String(postRequest.length()), 2000) ||
-      !sendATCommand(postRequest, 5000)) {
+      !sendATCommand(postRequest, 5000))
+  {
     return ERR_HTTP_SEND;
   }
 
-  if (!sendATCommand("AT+CIPCLOSE", 1000)) {
+  if (!sendATCommand("AT+CIPCLOSE", 1000))
+  {
     return ERR_CLOSE_CONNECTION;
   }
 
   return 0;  // Success
 }
 
-bool sendATCommand(String cmd, unsigned long timeout) {
+bool sendATCommand(String cmd, unsigned long timeout) 
+{
   espSerial.println(cmd);
   unsigned long start = millis();
   String response = "";
 
-  while (millis() - start < timeout) {
-    while (espSerial.available()) {
+  while (millis() - start < timeout)
+    {
+    while (espSerial.available()) 
+    {
       char c = espSerial.read();
       response += c;
     }
@@ -120,8 +133,10 @@ bool sendATCommand(String cmd, unsigned long timeout) {
   return false;
 }
 
-void blinkLED(int times) {
-  for (int i = 0; i < times; i++) {
+void blinkLED(int times) 
+{
+  for (int i = 0; i < times; i++)
+    {
     digitalWrite(LED_PIN, HIGH);
     delay(200);
     digitalWrite(LED_PIN, LOW);
@@ -129,11 +144,13 @@ void blinkLED(int times) {
   }
 }
 
-void reportError(int errorCode) {
+void reportError(int errorCode) 
+{
   Serial.print("Error Code: ");
   Serial.print(errorCode);
   Serial.print(" - ");
-  switch(errorCode) {
+  switch(errorCode) 
+  {
     case ERR_WIFI_CONNECT:
       Serial.println("Failed to connect to WiFi");
       break;
