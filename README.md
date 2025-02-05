@@ -85,3 +85,12 @@ Ensure you have the following installed:
 
 ## Presentation link 
 - https://www.canva.com/design/DAGeD8AT4DM/buknE9xSQxdCm2zLUTl-uQ/edit?utm_content=DAGeD8AT4DM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+--- 
+
+## Collaborators
+- [Avanish Gharat](https://github.com/Avamax-Q)
+- [Achintya Nigam](https://github.com/AchintyaNigam)
+- [Husain Sial](https://github.com/HS-246)
+- [Soumil Binhani](https://github.com/SoumilB7)
+- [Shivang Srivastava](https://github.com/Shivang1980)
