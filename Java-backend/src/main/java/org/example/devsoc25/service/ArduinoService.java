@@ -43,7 +43,7 @@ public class ArduinoService {
         log.info(jsonRequest);
 
 
-        URL url = new URL("https://7cda-2409-40f4-40c2-871-65c2-e767-b012-a0fe.ngrok-free.app/health-detect");
+        URL url = new URL("https://667f-152-58-225-239.ngrok-free.app/health-detect");
         HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);

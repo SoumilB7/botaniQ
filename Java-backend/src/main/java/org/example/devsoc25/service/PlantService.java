@@ -37,38 +37,42 @@ public class PlantService {
     }
 
 
-    public Plant savePlant(Plant plant, long userId, String image) throws URISyntaxException, IOException, InterruptedException {
+    public Plant savePlant(Plant plant, long userId)  {
         Optional<User> user = userRepository.findById(userId);
         plant.setUser(user.get());
 
-        String response="";
-        Gson gson = new Gson();
-        String jsonRequest = "{\"image\":\""+image+"\"}";
+//        String response="";
+//        Gson gson = new Gson();
+//        String jsonRequest = "{\"image\":\""+image+"\"}";
+//
+//        try {
+//            URL url = new URL("https://667f-152-58-225-239.ngrok-free.app/image-classify");
+//            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
+//            conn.setRequestMethod("POST");
+//            conn.setDoOutput(true);
+//            conn.setRequestProperty("Content-Type", "application/json");
+//            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+//
+//            try (DataOutputStream dos = new DataOutputStream(conn.getOutputStream())) {
+//                dos.writeBytes(jsonRequest);
+//            }
+//
+//            try (BufferedReader bf = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+//                String line;
+//                while ((line = bf.readLine()) != null) {
+//                    response+=line;
+//                    System.out.println(line);
+//                }
+//            }
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
-        URL url = new URL("https://7cda-2409-40f4-40c2-871-65c2-e767-b012-a0fe.ngrok-free.app/image-classify");
-        HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 
-        try (DataOutputStream dos = new DataOutputStream(conn.getOutputStream())) {
-            dos.writeBytes(jsonRequest);
-        }
-
-        try (BufferedReader bf = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
-            String line;
-            while ((line = bf.readLine()) != null) {
-                response+=line;
-                System.out.println(line);
-            }
-        }
-
-
-        HashMap<String,String> map = gson.fromJson(response,HashMap.class);
+        //HashMap<String,String> map = gson.fromJson(response,HashMap.class);
         //log.info(map.get("name")+"   "+map.get("description"));
-        plant.setName(map.get("name"));
-        plant.setDescription(map.get("description"));
+//        plant.setName(map.get("name"));
+//        plant.setDescription(map.get("description"));
 
         return plantRepository.save(plant);
     }

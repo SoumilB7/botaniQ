@@ -23,12 +23,12 @@ public class PlantController {
     }
 
     @PostMapping("/{userid}/save")
-    public ResponseEntity<?> savePlant(@RequestBody PlantBody plantBody, @PathVariable long userid) throws URISyntaxException, IOException, InterruptedException {
-        String image=plantBody.image;
-        Plant plant=new Plant();
-        plant.setRecordId(plantBody.recordId);
-        plant.setFileName(plantBody.fileName);
-        Plant resplant=plantService.savePlant(plant,userid,image);
+    public ResponseEntity<?> savePlant(@RequestBody Plant plant, @PathVariable long userid){
+//        String image=plantBody.image;
+//        Plant plant=new Plant();
+//        plant.setRecordId(plantBody.recordId);
+//        plant.setFileName(plantBody.fileName);
+        Plant resplant=plantService.savePlant(plant,userid);
         return ResponseEntity.ok(resplant);
     }
 
