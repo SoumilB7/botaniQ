@@ -2,7 +2,7 @@
 
 **Bringing intelligence to plant care with IoT & AI**  
 
-![botaniQ Banner](https://via.placeholder.com/1200x400?text=botaniQ+-+Smart+Plant+Monitoring) *(Replace with an actual image if available)*  
+![botaniQ Banner](https://drive.google.com/file/d/1yxzKrccEef0l6ssEw0PhIJGk6zYQ_E3_/view?usp=sharing)  
 
 ---
 
