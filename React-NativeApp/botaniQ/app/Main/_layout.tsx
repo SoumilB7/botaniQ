@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { AuthProvider } from "@/AuthContext";
+import { Image } from "react-native";
 
 export default function TabLayout() {
   return (
@@ -24,15 +24,15 @@ export default function TabLayout() {
           },
         }}
       >
-        <Tabs.Screen
-          name="home"
-          options={{
-            title: "Home",
-            tabBarIcon: ({ color, size }) => (
-              <Ionicons name="home-outline" size={size} color={color} />
-            ),
-          }}
-        />
+<Tabs.Screen
+  name="home"
+  options={{
+    title: "BotaniQ",
+    tabBarIcon: ({ color, size }) => (
+      <Ionicons name="home-outline" size={size} color={color} />
+    ),
+  }}
+/>
 
         <Tabs.Screen
           name="addPlant"

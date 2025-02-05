@@ -89,9 +89,9 @@ const PlantModal: React.FC<PlantModalProps> = ({ plant, visible, onClose }) => {
                   <Text style={styles.graphTitle}>Weekly Moisture Levels</Text>
                   <MoistureGraph data={plant.moistureData} />
                 </View>
-
+                
                 <Text style={styles.infoTitle}>
-                  Current Moisture Status: {plant.status}
+                  Current Stress Level: {plant.status}
                 </Text>
                 <View style={styles.plantInfoContainer}>
                   <Text style={styles.infoTitle}>About this Plant</Text>
